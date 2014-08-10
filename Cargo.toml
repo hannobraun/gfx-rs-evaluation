@@ -1,0 +1,11 @@
+[package]
+name = "gfx-eval"
+version = "0.0.1"
+authors = ["Hanno Braun <mail@hannobraun.de>"]
+
+
+[dependencies.gfx]
+git = "http://github.com/gfx-rs/gfx-rs"
+
+[dependencies.glfw_platform]
+git = "http://github.com/gfx-rs/gfx-rs"
