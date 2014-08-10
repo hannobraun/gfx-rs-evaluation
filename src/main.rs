@@ -17,16 +17,6 @@ struct Vertex {
 }
 
 static VERTEX_SRC: gfx::ShaderSource = shaders! {
-GLSL_120: b"
-	#version 120
-	attribute vec2 pos;
-	attribute vec3 color;
-	varying vec4 v_Color;
-	void main() {
-		v_Color = vec4(color, 1.0);
-		gl_Position = vec4(pos, 0.0, 1.0);
-	}
-"
 GLSL_150: b"
 	#version 150 core
 	in vec2 pos;
@@ -40,13 +30,6 @@ GLSL_150: b"
 };
 
 static FRAGMENT_SRC: gfx::ShaderSource = shaders! {
-GLSL_120: b"
-	#version 120
-	varying vec4 v_Color;
-	void main() {
-		gl_FragColor = v_Color;
-	}
-"
 GLSL_150: b"
 	#version 150 core
 	in vec4 v_Color;
