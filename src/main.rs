@@ -65,64 +65,37 @@ fn start(argc: int, argv: *const *const u8) -> int {
 }
 
 fn main() {
-    // checking for the --gl-init flag
-    let use_glinit = {
-        use std::os;
-        use getopts::{optflag, getopts};
+    let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
-        let args: Vec<String> = os::args();
+    let (mut window, events) = glfw_platform::WindowBuilder::new(&glfw)
+        .title("[GLFW] Triangle example #gfx-rs!")
+        .try_modern_context_hints()
+        .create()
+        .expect("Failed to create GLFW window.");
 
-        let options = [
-            optflag("i", "gl-init", "use gl-init instead of glfw")
-        ];
+    glfw.set_error_callback(glfw::FAIL_ON_ERRORS);
+    window.set_key_polling(true); // so we can quit when Esc is pressed
+    let (w, h) = window.get_size();
 
-        let matches = match getopts(args.tail(), options) {
-            Ok(m) => { m }
-            Err(f) => {
-                println!("{}", f.to_string());
-                println!("Usage: {} [options]", args[0]);
-                println!("--gl-init\t\tUse gl-init instead of glfw");
-                return
-            }
-        };
+    let mut device = gfx::build()
+        .with_glfw_window(&mut window)
+        .with_queue_size(1)
+        .spawn(proc(r) render(r, w as u16, h as u16))
+        .unwrap();
 
-        matches.opt_present("i")
-    };
-
-    if use_glinit {
-    } else {
-        let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
-
-        let (mut window, events) = glfw_platform::WindowBuilder::new(&glfw)
-            .title("[GLFW] Triangle example #gfx-rs!")
-            .try_modern_context_hints()
-            .create()
-            .expect("Failed to create GLFW window.");
-
-        glfw.set_error_callback(glfw::FAIL_ON_ERRORS);
-        window.set_key_polling(true); // so we can quit when Esc is pressed
-        let (w, h) = window.get_size();
-
-        let mut device = gfx::build()
-            .with_glfw_window(&mut window)
-            .with_queue_size(1)
-            .spawn(proc(r) render(r, w as u16, h as u16))
-            .unwrap();
-
-        'main: loop {
-            glfw.poll_events();
-            if window.should_close() {
-                break 'main;
-            }
-            // quit when Esc is pressed.
-            for (_, event) in glfw::flush_messages(&events) {
-                match event {
-                    glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => break 'main,
-                    _ => {},
-                }
-            }
-            device.update();
+    'main: loop {
+        glfw.poll_events();
+        if window.should_close() {
+            break 'main;
         }
+        // quit when Esc is pressed.
+        for (_, event) in glfw::flush_messages(&events) {
+            match event {
+                glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => break 'main,
+                _ => {},
+            }
+        }
+        device.update();
     }
 }
 
