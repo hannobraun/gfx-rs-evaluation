@@ -46,10 +46,11 @@ GLSL_150: b"
 struct GfxRsContext {
 	glfw  : glfw::Glfw,
 	window: glfw::Window,
+	events: sync::comm::Receiver<(f64,glfw::WindowEvent)>,
 }
 
 impl GfxRsContext {
-	fn init() -> (GfxRsContext, sync::comm::Receiver<(f64,glfw::WindowEvent)>, device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
+	fn init() -> (GfxRsContext, device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
 		let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
 		let (mut window, events) = glfw_platform::WindowBuilder::new(&glfw)
@@ -71,18 +72,19 @@ impl GfxRsContext {
 		let context = GfxRsContext {
 			glfw  : glfw,
 			window: window,
+			events: events,
 		};
 
-		return (context, events, device);
+		return (context, device);
 	}
 
-	fn input(&self, events: &sync::comm::Receiver<(f64,glfw::WindowEvent)>) -> bool {
+	fn input(&self) -> bool {
 		self.glfw.poll_events();
 		if self.window.should_close() {
 			return false;
 		}
 		// quit when Esc is pressed.
-		for (_, event) in glfw::flush_messages(events) {
+		for (_, event) in glfw::flush_messages(&self.events) {
 			match event {
 				glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => return false,
 				_ => {},
@@ -105,11 +107,11 @@ fn start(argc: int, argv: *const *const u8) -> int {
 }
 
 fn main() {
-	let (context, events, mut device) = GfxRsContext::init();
+	let (context, mut device) = GfxRsContext::init();
 
 	let mut keep_running = true;
 	while keep_running {
-		keep_running = context.input(&events);
+		keep_running = context.input();
 		context.render(&mut device);
 	}
 }
