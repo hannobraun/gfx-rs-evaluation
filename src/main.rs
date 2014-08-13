@@ -1,5 +1,6 @@
 #![feature(phase)]
 
+extern crate device;
 #[phase(plugin)]
 extern crate gfx_macros;
 extern crate getopts;
@@ -7,6 +8,7 @@ extern crate gfx;
 extern crate glfw;
 extern crate glfw_platform;
 extern crate native;
+extern crate render;
 
 use glfw_platform::BuilderExtension;
 
@@ -78,8 +80,13 @@ fn main() {
 				_ => {},
 			}
 		}
-		device.update();
+
+		render(&mut device);
 	}
+}
+
+fn render(device: &mut device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
+	device.update();
 }
 
 fn render_loop(mut renderer: gfx::Renderer, width: u16, height: u16) {
