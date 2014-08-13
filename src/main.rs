@@ -50,6 +50,16 @@ fn start(argc: int, argv: *const *const u8) -> int {
 }
 
 fn main() {
+	let (glfw, window, events, mut device) = init();
+
+	let mut keep_running = true;
+	while keep_running {
+		keep_running = input(&glfw, &window, &events);
+		render(&mut device);
+	}
+}
+
+fn init() -> (glfw::Glfw, glfw::Window, sync::comm::Receiver<(f64,glfw::WindowEvent)>, device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
 	let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
 	let (mut window, events) = glfw_platform::WindowBuilder::new(&glfw)
@@ -62,17 +72,13 @@ fn main() {
 	window.set_key_polling(true); // so we can quit when Esc is pressed
 	let (w, h) = window.get_size();
 
-	let mut device = gfx::build()
+	let device = gfx::build()
 		.with_glfw_window(&mut window)
 		.with_queue_size(1)
 		.spawn(proc(r) render_loop(r, w as u16, h as u16))
 		.unwrap();
 
-	let mut keep_running = true;
-	while keep_running {
-		keep_running = input(&glfw, &window, &events);
-		render(&mut device);
-	}
+	return (glfw, window, events, device);
 }
 
 fn input(glfw: &glfw::Glfw, window: &glfw::Window, events: &sync::comm::Receiver<(f64,glfw::WindowEvent)>) -> bool {
