@@ -46,7 +46,7 @@ GLSL_150: b"
 struct GfxRsContext;
 
 impl GfxRsContext {
-	fn init() -> (glfw::Glfw, glfw::Window, sync::comm::Receiver<(f64,glfw::WindowEvent)>, device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
+	fn init() -> (GfxRsContext, glfw::Glfw, glfw::Window, sync::comm::Receiver<(f64,glfw::WindowEvent)>, device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
 		let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
 		let (mut window, events) = glfw_platform::WindowBuilder::new(&glfw)
@@ -65,7 +65,7 @@ impl GfxRsContext {
 			.spawn(proc(r) render_loop(r, w as u16, h as u16))
 			.unwrap();
 
-		return (glfw, window, events, device);
+		return (GfxRsContext, glfw, window, events, device);
 	}
 
 	fn input(glfw: &glfw::Glfw, window: &glfw::Window, events: &sync::comm::Receiver<(f64,glfw::WindowEvent)>) -> bool {
@@ -97,7 +97,7 @@ fn start(argc: int, argv: *const *const u8) -> int {
 }
 
 fn main() {
-	let (glfw, window, events, mut device) = GfxRsContext::init();
+	let (_, glfw, window, events, mut device) = GfxRsContext::init();
 
 	let mut keep_running = true;
 	while keep_running {
