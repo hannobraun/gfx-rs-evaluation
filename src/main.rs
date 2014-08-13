@@ -67,15 +67,16 @@ fn main() {
 		.spawn(proc(r) render_loop(r, w as u16, h as u16))
 		.unwrap();
 
-	'main: loop {
+	let mut keep_running = true;
+	while keep_running {
 		glfw.poll_events();
 		if window.should_close() {
-			break 'main;
+			keep_running = false;
 		}
 		// quit when Esc is pressed.
 		for (_, event) in glfw::flush_messages(&events) {
 			match event {
-				glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => break 'main,
+				glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => keep_running = false,
 				_ => {},
 			}
 		}
