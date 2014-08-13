@@ -1,8 +1,7 @@
 #![feature(phase)]
 
 extern crate device;
-#[phase(plugin)]
-extern crate gfx_macros;
+#[phase(plugin)] extern crate gfx_macros;
 extern crate getopts;
 extern crate gfx;
 extern crate glfw;
