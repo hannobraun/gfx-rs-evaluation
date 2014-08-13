@@ -83,7 +83,7 @@ fn main() {
 }
 
 fn render_loop(mut renderer: gfx::Renderer, width: u16, height: u16) {
-	let frame = gfx::Frame::new(width as u16, height as u16);
+	let frame = gfx::Frame::new(width, height);
 	let state = gfx::DrawState::new();
 
 	let vertex_data = vec![
