@@ -84,7 +84,7 @@ impl GfxRsContext {
 		return true;
 	}
 
-	fn render(device: &mut device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
+	fn render(&self, device: &mut device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
 		device.update();
 	}
 }
@@ -102,7 +102,7 @@ fn main() {
 	let mut keep_running = true;
 	while keep_running {
 		keep_running = context.input(&glfw, &window, &events);
-		GfxRsContext::render(&mut device);
+		context.render(&mut device);
 	}
 }
 
