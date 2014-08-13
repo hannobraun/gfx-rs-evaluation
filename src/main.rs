@@ -63,7 +63,7 @@ fn main() {
 	let mut device = gfx::build()
 		.with_glfw_window(&mut window)
 		.with_queue_size(1)
-		.spawn(proc(r) render(r, w as u16, h as u16))
+		.spawn(proc(r) render_loop(r, w as u16, h as u16))
 		.unwrap();
 
 	'main: loop {
@@ -82,7 +82,7 @@ fn main() {
 	}
 }
 
-fn render(mut renderer: gfx::Renderer, width: u16, height: u16) {
+fn render_loop(mut renderer: gfx::Renderer, width: u16, height: u16) {
 	let frame = gfx::Frame::new(width as u16, height as u16);
 	let state = gfx::DrawState::new();
 
