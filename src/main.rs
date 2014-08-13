@@ -42,6 +42,53 @@ GLSL_150: b"
 "
 };
 
+
+struct GfxRsContext;
+
+impl GfxRsContext {
+	fn init() -> (glfw::Glfw, glfw::Window, sync::comm::Receiver<(f64,glfw::WindowEvent)>, device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
+		let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+
+		let (mut window, events) = glfw_platform::WindowBuilder::new(&glfw)
+			.title("[GLFW] Triangle example #gfx-rs!")
+			.try_modern_context_hints()
+			.create()
+			.expect("Failed to create GLFW window.");
+
+		glfw.set_error_callback(glfw::FAIL_ON_ERRORS);
+		window.set_key_polling(true); // so we can quit when Esc is pressed
+		let (w, h) = window.get_size();
+
+		let device = gfx::build()
+			.with_glfw_window(&mut window)
+			.with_queue_size(1)
+			.spawn(proc(r) render_loop(r, w as u16, h as u16))
+			.unwrap();
+
+		return (glfw, window, events, device);
+	}
+
+	fn input(glfw: &glfw::Glfw, window: &glfw::Window, events: &sync::comm::Receiver<(f64,glfw::WindowEvent)>) -> bool {
+		glfw.poll_events();
+		if window.should_close() {
+			return false;
+		}
+		// quit when Esc is pressed.
+		for (_, event) in glfw::flush_messages(events) {
+			match event {
+				glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => return false,
+				_ => {},
+			}
+		}
+
+		return true;
+	}
+
+	fn render(device: &mut device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
+		device.update();
+	}
+}
+
 // We need to run on the main thread for GLFW, so ensure we are using the `native` runtime. This is
 // technically not needed, since this is the default, but it's not guaranteed.
 #[start]
@@ -50,55 +97,13 @@ fn start(argc: int, argv: *const *const u8) -> int {
 }
 
 fn main() {
-	let (glfw, window, events, mut device) = init();
+	let (glfw, window, events, mut device) = GfxRsContext::init();
 
 	let mut keep_running = true;
 	while keep_running {
-		keep_running = input(&glfw, &window, &events);
-		render(&mut device);
+		keep_running = GfxRsContext::input(&glfw, &window, &events);
+		GfxRsContext::render(&mut device);
 	}
-}
-
-fn init() -> (glfw::Glfw, glfw::Window, sync::comm::Receiver<(f64,glfw::WindowEvent)>, device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
-	let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
-
-	let (mut window, events) = glfw_platform::WindowBuilder::new(&glfw)
-		.title("[GLFW] Triangle example #gfx-rs!")
-		.try_modern_context_hints()
-		.create()
-		.expect("Failed to create GLFW window.");
-
-	glfw.set_error_callback(glfw::FAIL_ON_ERRORS);
-	window.set_key_polling(true); // so we can quit when Esc is pressed
-	let (w, h) = window.get_size();
-
-	let device = gfx::build()
-		.with_glfw_window(&mut window)
-		.with_queue_size(1)
-		.spawn(proc(r) render_loop(r, w as u16, h as u16))
-		.unwrap();
-
-	return (glfw, window, events, device);
-}
-
-fn input(glfw: &glfw::Glfw, window: &glfw::Window, events: &sync::comm::Receiver<(f64,glfw::WindowEvent)>) -> bool {
-	glfw.poll_events();
-	if window.should_close() {
-		return false;
-	}
-	// quit when Esc is pressed.
-	for (_, event) in glfw::flush_messages(events) {
-		match event {
-			glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => return false,
-			_ => {},
-		}
-	}
-
-	return true;
-}
-
-fn render(device: &mut device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
-	device.update();
 }
 
 fn render_loop(mut renderer: gfx::Renderer, width: u16, height: u16) {
