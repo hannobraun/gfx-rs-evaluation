@@ -68,7 +68,7 @@ impl GfxRsContext {
 		return (GfxRsContext, glfw, window, events, device);
 	}
 
-	fn input(glfw: &glfw::Glfw, window: &glfw::Window, events: &sync::comm::Receiver<(f64,glfw::WindowEvent)>) -> bool {
+	fn input(&self, glfw: &glfw::Glfw, window: &glfw::Window, events: &sync::comm::Receiver<(f64,glfw::WindowEvent)>) -> bool {
 		glfw.poll_events();
 		if window.should_close() {
 			return false;
@@ -97,11 +97,11 @@ fn start(argc: int, argv: *const *const u8) -> int {
 }
 
 fn main() {
-	let (_, glfw, window, events, mut device) = GfxRsContext::init();
+	let (context, glfw, window, events, mut device) = GfxRsContext::init();
 
 	let mut keep_running = true;
 	while keep_running {
-		keep_running = GfxRsContext::input(&glfw, &window, &events);
+		keep_running = context.input(&glfw, &window, &events);
 		GfxRsContext::render(&mut device);
 	}
 }
