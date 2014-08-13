@@ -8,6 +8,7 @@ extern crate glfw;
 extern crate glfw_platform;
 extern crate native;
 extern crate render;
+extern crate sync;
 
 use glfw_platform::BuilderExtension;
 
@@ -69,20 +70,25 @@ fn main() {
 
 	let mut keep_running = true;
 	while keep_running {
-		glfw.poll_events();
-		if window.should_close() {
-			keep_running = false;
-		}
-		// quit when Esc is pressed.
-		for (_, event) in glfw::flush_messages(&events) {
-			match event {
-				glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => keep_running = false,
-				_ => {},
-			}
-		}
-
+		keep_running = input(&glfw, &window, &events);
 		render(&mut device);
 	}
+}
+
+fn input(glfw: &glfw::Glfw, window: &glfw::Window, events: &sync::comm::Receiver<(f64,glfw::WindowEvent)>) -> bool {
+	glfw.poll_events();
+	if window.should_close() {
+		return false;
+	}
+	// quit when Esc is pressed.
+	for (_, event) in glfw::flush_messages(events) {
+		match event {
+			glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => return false,
+			_ => {},
+		}
+	}
+
+	return true;
 }
 
 fn render(device: &mut device::Device<render::resource::handle::Handle,device::gl::GlBackEnd,glfw_platform::Platform<glfw::RenderContext>>) {
