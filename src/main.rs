@@ -1,4 +1,5 @@
 #![feature(phase)]
+#![feature(unsafe_destructor)]
 
 extern crate device;
 #[phase(plugin)] extern crate gfx_macros;
@@ -99,6 +100,11 @@ impl GfxRsContext {
 	fn render(&mut self) {
 		self.device.update();
 	}
+}
+
+#[unsafe_destructor]
+impl Drop for GfxRsContext {
+	fn drop(&mut self) {}
 }
 
 // We need to run on the main thread for GLFW, so ensure we are using the `native` runtime. This is
